@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<environment names="Production">
+    Production
+</environment>
+<environment names="Development">
+    Development
+
+    <input type="text" name="num" class="kendo-numeric" />
+    <select name="city1" id="city1" class="kendo-dropdownlist"></select>
+    <select name="city2" id="city2" class="kendo-dropdownlist"></select>
+    <div id="report-grid"></div>
+</environment>
+
+<script type="text/javascript">
+    $(function () {
+
+        // Sayfa default yükleme
+        $("#city1").kendoComboBox({
+            dataSource: @Html.Raw((string)ViewBag.CityList),
+            dataTextField: "Name",
+            dataValueField: "PlateNo"
+        });
+
+        // Sayfa yüklendikten sonra ajax ile çekiliyor
+        $("#city2").kendoComboBox({
+            dataTextField: "Name",
+            dataValueField: "PlateNo",
+            placeholder: "Select product...",
+            filter: "contains",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: '@Url.Action("CityList", "Home")'
+                    }
+                }
+            }
+        });
+
+        $("#report-grid").kendoGrid({
+            autoBind: true,
+            scrollable: false,
+            pageable: true,
+            sortable: true,
+            filterable: true,
+            reorderable: true,
+            columnMenu: true,
+            columns: [
+                { field: "Name", title: "Name", width: "130px" },
+                { field: "PlateNo", title: "PlateNo"}
+            ],
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GridCityList2", "Home")",
+                        dataType: "json",
+                        contentType: 'application/json; charset=utf-8',
+                        type: 'GET'
+                    },
+                    parameterMap: function (options) {
+                        return kendo.stringify(options);
+                    }
+                },
+                schema: {
+                    data: "Data",
+                    total: "Total",
+                    model: {
+                        fields: {
+                            "Name": { type: "string" },
+                            "PlateNo": { type: "number" }
+                        }
+                    }
+                },
+                error: function (e) {
+                    alert(e.errorThrown);
+                },
+                pageSize: 1,
+                sort: { field: "PlateNo", dir: "desc" },
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true
+            },
+        });
+    });
+</script>
